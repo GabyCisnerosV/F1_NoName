@@ -22,7 +22,7 @@ import pandas as pd
 
 #Data from Results Ergast API
 #Documentation https://ergast.com/mrd/methods/results/
-Results=requests.get("http://ergast.com/api/f1/2022/18/results.json")
+Results=requests.get("http://ergast.com/api/f1/2021/18/results.json")
 print(Results.status_code) #200 ok
 Results.json() #json response
 type(Results.json()) #dict
@@ -39,16 +39,19 @@ df1 = pd.json_normalize(Races,record_path=['Results'],
 
 
 ###
-#Downloading data from 2001 until the last race
+#Downloading data from Races, Quali sessions, pit stops, 
 ###
 
-### Results per race per driver
+
+
+
+### Race Results per race per driver
 
 #1 Results in one table (all but the last race)
 
 ResultsDF=pd.DataFrame()
 
-for year in range(2001,2022): #From 2001 until 2022 (to be able to use in the close future)
+for year in range(2003,2022): #From 2003 until 2022 (to be able to use in the close future)
     for race in range(1,30): #The maximum number of races was in 2021 with 22 races
         url="http://ergast.com/api/f1/"+str(year)+"/"+str(race)+"/results.json" #modifying the url
         Results=requests.get(url) #Request from API
@@ -62,7 +65,8 @@ for year in range(2001,2022): #From 2001 until 2022 (to be able to use in the cl
                        meta=["season","round",'raceName',
                              ['Circuit','circuitId'],
                              ['Circuit','circuitName'],
-                             ['Circuit','Location','country']])
+                             ['Circuit','Location','country'],
+                             'date'])
             ResultsDF = pd.concat([ResultsDF, df], axis=0)
         elif Races==[]: #if this number of race was not held that year
             print("Season ",year,"- Race ",race,": The race was NOT held.")
@@ -77,40 +81,57 @@ df= pd.json_normalize(Races,record_path=['Results'],
                        meta=["season","round",'raceName',
                              ['Circuit','circuitId'],
                              ['Circuit','circuitName'],
-                             ['Circuit','Location','country']])
+                             ['Circuit','Location','country'],
+                             'date'])
 ResultsDF = pd.concat([ResultsDF, df], axis=0)
-#8367 
-
-ResultsDF.info()
-ResultsDF.groupby("position")["number"].count()
 
 
+#ResultsDF.info()
+#ResultsDF.groupby("position")["number"].count()
 
 
 
 
 
-response=requests.get("http://ergast.com/api/f1/results.json")
-"http://ergast.com/api/f1/2021/1/results.json"
 
-print(response.status_code) #200 ok
+### Qualifying Results per race, per driver
 
-response.json() #json response
+QualifyingDF=pd.DataFrame()
 
-type(response.json()) #dict
-
-
-Results=response.json()
-Races=Results['MRData']['RaceTable']["Races"]
-Races
-import pandas as pd
-
-df = pd.json_normalize(Races,record_path=['Results'],
+for year in range(2003,2022): #Available from 2003
+    for race in range(1,30): #The maximum number of races was in 2021 with 22 races
+        url="http://ergast.com/api/f1/"+str(year)+"/"+str(race)+"/qualifying.json" #modifying the url
+        Results=requests.get(url) #Request from API
+        Results=Results.json() #Results in json format
+        Races=Results['MRData']['RaceTable']["Races"] #subset of desired features
+        
+        #Each season has a different number of races per year
+        if Races!=[]: #if the year and number of race exist
+            print("Season ",year,"- Race ",race,": The race was held.")
+            df= pd.json_normalize(Races,record_path=['QualifyingResults'],
                        meta=["season","round",'raceName',
                              ['Circuit','circuitId'],
                              ['Circuit','circuitName'],
-                             ['Circuit','Location','country']])
-df.head()
+                             ['Circuit','Location','country'],
+                             'date'])
+            QualifyingDF = pd.concat([QualifyingDF, df], axis=0)
+        elif Races==[]: #if this number of race was not held that year
+            print("Season ",year,"- Race ",race,": The race was NOT held.")
+            continue
+        
+#2 The last race url has a different format:
+url="http://ergast.com/api/f1/current/last/qualifying.json" #modifying the url
+Results=requests.get(url) #Request from API
+Results=Results.json() #Results in json format
+Races=Results['MRData']['RaceTable']["Races"] #subset of desired features   
+df= pd.json_normalize(Races,record_path=['QualifyingResults'],
+                       meta=["season","round",'raceName',
+                             ['Circuit','circuitId'],
+                             ['Circuit','circuitName'],
+                             ['Circuit','Location','country'],
+                             'date'])
+QualifyingDF = pd.concat([QualifyingDF, df], axis=0)
+QualifyingDF.info()
 
 
 
@@ -118,19 +139,15 @@ df.head()
 
 
 
-url = "http://ergast.com/api/f1/2021/1/results.json"
-df = pd.read_json(url)
-print(df)
 
-df=pd.read_json(response.json())
-df
 
-def jprint(obj):
-    # create a formatted string of the Python JSON object
-    text = json.dumps(obj, sort_keys=True, indent=4)
-    print(text)
 
-jprint(response.json())
+
+
+
+
+
+
 
 #To continue
 #https://ergast.com/mrd/methods/results/
