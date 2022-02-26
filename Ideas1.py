@@ -42,6 +42,8 @@ df1 = pd.json_normalize(Races,record_path=['Results'],
 #Downloading data from 2001 until the last race
 ###
 
+### Results per race per driver
+
 #1 Results in one table (all but the last race)
 
 ResultsDF=pd.DataFrame()
@@ -77,8 +79,10 @@ df= pd.json_normalize(Races,record_path=['Results'],
                              ['Circuit','circuitName'],
                              ['Circuit','Location','country']])
 ResultsDF = pd.concat([ResultsDF, df], axis=0)
+#8367 
 
-
+ResultsDF.info()
+ResultsDF.groupby("position")["number"].count()
 
 
 
