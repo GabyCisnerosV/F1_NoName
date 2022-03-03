@@ -1,4 +1,4 @@
-# F1_PredictPodiumAlgorithm
+# F1_PredictingPodiumAlgorithm
 
 My name is Gabriela, and I follow F1 since I was around 10 years old. I am looking for an algorithm that helps me predict who will win the race several laps before it ends. This is a project in continuous progress as I am testing different algorithms to find the one that is closer to help me make my predictions
 
