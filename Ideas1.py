@@ -36,13 +36,35 @@ path = 'C:/Users/gabri/Dropbox/Gaby/Proyectos/My_Portafolio/F1/Data/'
 
 
 
+########################I1
+#To replace outliers in F1
+#Treating outliers with method based on percentiles and caps (1,99)
+Laps_Pits_Results['lap_duration_in_seconds_no_outliers']=Laps_Pits_Results['lap_duration_in_seconds'].copy(deep=True)
+Years=Laps_Pits_Results["season"].unique().tolist() #or seasons for plot
+for y in Years:
+    seasoncircuits=Laps_Pits_Results[Laps_Pits_Results["season"]==y]['Circuit.circuitId'].unique().tolist()
+    for seascirc in seasoncircuits:
+        Cond_A=(Laps_Pits_Results["status"]=="Finished")
+        Cond_B=(Laps_Pits_Results["season"]==y)
+        Cond_C=(Laps_Pits_Results['Circuit.circuitId']==seascirc)
+        Data_with_conditions=Laps_Pits_Results[Cond_A & Cond_B & Cond_C]
 
-#To continue
-#https://ergast.com/mrd/methods/results/
-#https://www.dataquest.io/blog/python-api-tutorial/
+        #Quantile measures and caps
+        q1=Laps_Pits_Results[Cond_A & Cond_B & Cond_C]['lap_duration_in_seconds_no_outliers'].quantile(0.01)
+        q99=Laps_Pits_Results[Cond_A & Cond_B & Cond_C]['lap_duration_in_seconds_no_outliers'].quantile(0.99)
+
+        #Values that are above the limit
+        Upper=Data_with_conditions[Data_with_conditions['lap_duration_in_seconds_no_outliers']>q99]['lap_duration_in_seconds_no_outliers']
+        Lower=Data_with_conditions[Data_with_conditions['lap_duration_in_seconds_no_outliers']<q1]['lap_duration_in_seconds_no_outliers']
+
+        #Replacing outliers
+        for i in Upper:
+            Laps_Pits_Results['lap_duration_in_seconds_no_outliers']=Laps_Pits_Results[Cond_A & Cond_B & Cond_C]['lap_duration_in_seconds_no_outliers'].replace(i,q99)
+
+        for i in Lower:
+            Laps_Pits_Results['lap_duration_in_seconds_no_outliers']=Laps_Pits_Results[Cond_A & Cond_B & Cond_C]['lap_duration_in_seconds_no_outliers'].replace(i,q1)
 
 
 
-#que factor influye a que haya mas cambio s de llantas en cada carrera
-#relacion accidentes y halo
-#datos de pretemporada te dicen algo
+#########################I2
+#DO PLOT AVERAGE DURATION OF EACH LAP IN A RACE
