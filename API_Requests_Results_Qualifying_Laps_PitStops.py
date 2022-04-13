@@ -42,8 +42,6 @@ import pandas as pd
 #Downloading data from Races, Qualifying sessions, pit stops, laps
 ##############################################################################
 
-
-
 ##############################################################################
 ### Race Results per race per driver
 
@@ -91,8 +89,6 @@ ResultsDF = pd.concat([ResultsDF, df], axis=0)
 
 
 
-
-
 ##############################################################################
 ### Qualifying Results per race, per driver
 
@@ -124,9 +120,6 @@ QualifyingDF.info()
 
 
 
-
-
-
 ##############################################################################
 ### Laps times per race, per driver
 
@@ -153,7 +146,7 @@ for year in range(2003,2023): #Available from 2003
                 df2 = pd.json_normalize(Races["Laps"],record_path=['Timings'],
                                        meta=["number"])
                 df2["number"] = pd.to_numeric(df2["number"])
-                df2=df2.rename(columns={"number": "LapNumber"})
+                df2=df2.rename(columns={"number": "LapNumber","time":"LapDuration"})
                 
                 Laps=pd.merge(df1, df2,how="right",on="LapNumber")
                 LapsDF = pd.concat([LapsDF, Laps], axis=0)
@@ -162,7 +155,8 @@ for year in range(2003,2023): #Available from 2003
                 continue
 
 
-
+LapsDF.info()
+LapsDF=LapsDF.drop(["time"],axis=1)
 
 
 ##############################################################################
