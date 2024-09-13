@@ -1,32 +1,16 @@
 ##############################################################################
-# Downloading data from Races, Qualifying sessions, pit stops, laps
+#### 1_API_REQUESTS_ERGAST
 ##############################################################################
-# f1 Results from https://ergast.com/mrd/
+# To Update data from Races, Qualifying sessions, pit stops, laps
+##############################################################################
+# f1 Results from https://ergast.com/mrd/ . This sourcce will stop working in 2024.
 ##############################################################################
 
 import requests
 import pandas as pd
 
-###
-#Individual Test to download Results Database
-###
-
-#Data from Results Ergast API
-#Documentation https://ergast.com/mrd/methods/results/
-# Results=requests.get("http://ergast.com/api/f1/2021/18/results.json")
-# print(Results.status_code) #200 ok
-# Results.json() #json response
-# type(Results.json()) #dict
-
-# Results=Results.json()
-# Races=Results['MRData']['RaceTable']["Races"]
-
-# df1 = pd.json_normalize(Races,record_path=['Results'],
-#                        meta=["season","round",'raceName',
-#                              ['Circuit','circuitId'],
-#                              ['Circuit','circuitName'],
-#                              ['Circuit','Location','country']])
-
+y_start,y_end=2024,2025 # range of years data is extracted
+r_start,r_end=10,20 #range races in the year (Sessions) extracted
 
 ##############################################################################
 ### Race Results per race per driver
@@ -35,8 +19,8 @@ import pandas as pd
 
 ResultsDF=pd.DataFrame()
 
-for year in range(2003,2025): #From 2003 until 2022 (to be able to use in the close future)
-    for race in range(1,40): #The maximum number of races was in 2021 with 22 races
+for year in range(y_start,y_end): #From 2003 until 2022 (to be able to use in the close future)
+    for race in range(r_start,r_end): #The maximum number of races was in 2021 with 22 races
         url="http://ergast.com/api/f1/"+str(year)+"/"+str(race)+"/results.json" #modifying the url
         Results=requests.get(url) #Request from API
         Results=Results.json() #Results in json format
@@ -80,8 +64,8 @@ ResultsDF.info()
 
 QualifyingDF=pd.DataFrame()
 
-for year in range(2003,2023): #Available from 2003
-    for race in range(1,30): #The maximum number of races was in 2021 with 22 races
+for year in range(y_start,y_end): #Available from 2003
+    for race in range(r_start,r_end): #The maximum number of races was in 2021 with 22 races
         url="http://ergast.com/api/f1/"+str(year)+"/"+str(race)+"/qualifying.json" #modifying the url
         Results=requests.get(url) #Request from API
         Results=Results.json() #Results in json format
@@ -111,8 +95,8 @@ QualifyingDF.info()
 
 LapsDF=pd.DataFrame()
 
-for year in range(2003,2023): #Available from 2003
-    for race in range(1,30): #The maximum number of races was in 2021 with 22 races
+for year in range(y_start,y_end): #Available from 2003
+    for race in range(r_start,r_end): #The maximum number of races was in 2021 with 22 races
         for lap in range(1,100): #The maximum number of laps per race is 76
             url="http://ergast.com/api/f1/"+str(year)+"/"+str(race)+"/laps/"+str(lap)+".json" #modifying the url
             Results=requests.get(url) #Request from API
@@ -150,8 +134,8 @@ LapsDF=LapsDF.drop(["time"],axis=1)
 
 PitsDF=pd.DataFrame()
 
-for year in range(2012,2023): #Available from 2012
-    for race in range(1,30): #The maximum number of races was in 2021 with 22 races
+for year in range(y_start,y_end): #Available from 2012
+    for race in range(r_start,r_end): #The maximum number of races was in 2021 with 22 races
         url="http://ergast.com/api/f1/"+str(year)+"/"+str(race)+"/pitstops.json" #modifying the url
         Results=requests.get(url) #Request from API
         Results=Results.json() #Results in json format
@@ -176,11 +160,37 @@ for year in range(2012,2023): #Available from 2012
 PitsDF.info()
 
 
+
+
+
+##############################################################################
+### Update Existing Data
+
+results_pre=pd.read_csv("C:/Users/gabri/Dropbox/Gaby/Proyectos/My_Portafolio/F1/Data/ResultsDF.csv")
+qualifying_pre=pd.read_csv("C:/Users/gabri/Dropbox/Gaby/Proyectos/My_Portafolio/F1/Data/QualifyingDF.csv")
+laps_pre=pd.read_csv("C:/Users/gabri/Dropbox/Gaby/Proyectos/My_Portafolio/F1/Data/LapsDF.csv")
+pits_pre=pd.read_csv("C:/Users/gabri/Dropbox/Gaby/Proyectos/My_Portafolio/F1/Data/PitsDF.csv")
+
+print("DFs Before:")
+dfs={"Results":results_pre,"Qualifying":qualifying_pre,"Laps":laps_pre,"Pits":pits_pre}
+for k,v in dfs.items():
+    print(k,len(v))
+
+results_updated=pd.concat([ResultsDF,results_pre]).drop_duplicates()
+qualifying_updated=pd.concat([QualifyingDF,qualifying_pre]).drop_duplicates()
+laps_updated=pd.concat([LapsDF,laps_pre]).drop_duplicates()
+pits_updated=pd.concat([PitsDF,pits_pre]).drop_duplicates()
+
+print("DFs After:")
+dfs={"Results":results_pre,"Qualifying":qualifying_pre,"Laps":laps_pre,"Pits":pits_pre}
+for k,v in dfs.items():
+    print(k,len(v))
+
 #Store four dataframes in csv
 path = 'C:/Users/gabri/Dropbox/Gaby/Proyectos/My_Portafolio/F1/Data/'
 
-ResultsDF.to_csv(path+"ResultsDF.csv")
-QualifyingDF.to_csv(path+"QualifyingDF.csv")
-LapsDF.to_csv(path+"LapsDF.csv")
-PitsDF.to_csv(path+"PitsDF.csv")
+results_updated.to_csv(path+"ResultsDF.csv")
+qualifying_updated.to_csv(path+"QualifyingDF.csv")
+laps_updated.to_csv(path+"LapsDF.csv")
+pits_updated.to_csv(path+"PitsDF.csv")
 
