@@ -16,7 +16,7 @@ If you have a suggestion or an idea, please feel free to let me know ;)
 
 ## Repository Guide:
 
-  API_Requests_Results_Qualifying_Laps_PitStops.py: This file downloads the information available about the F1 races.
+  1_API_Requests_Ergast.py: File that extracts race, qualifying, pit stops and lap data from Ergast API.
   
   Ideas1.py: A space to write ideas.
   
