@@ -64,7 +64,7 @@ def preprocess_F1results(df: pd.DataFrame) -> pd.DataFrame:
     df=preprocess_F1_all(df)
 
     # Change to Milliseconds:
-    df['fastestlap.time.in_miliseconds']=df['fastestlap.time.time'].apply(lambda x: None if x is None else time_features_to_milliseconds(str(x)))
+    df['fastestlap.time.in_milliseconds']=df['fastestlap.time.time'].apply(lambda x: None if x is None else time_features_to_milliseconds(str(x)))
     
     # Renaming columns to avoid issues when merging with other dfs
     df=df.rename(columns={'number':"driver_number",
