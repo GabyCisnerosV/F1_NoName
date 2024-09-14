@@ -75,13 +75,14 @@ def preprocess_F1results(df: pd.DataFrame) -> pd.DataFrame:
                           'laps':'final_laps',
                           'status':'final_status',
                           'time.millis':"race_time.millis",
-                          'time.time':"race_time.time"})
+                          'time.time':"race_time.time",
+                          "driver.driverid":"driverid"})
 
     # Creating Season-Round feature
     df["season-round"] = df["season"].astype(str) + "-" + df["round"].astype(str)
 
     # Encode features
-    for i in ['circuit.circuitid','constructor.constructorid','driver.driverid']:
+    for i in ['circuit.circuitid','constructor.constructorid','driverid']:
         encoder=LabelEncoder()
         encoder.fit(df[i])
         encoder_values=encoder.transform(df[i])
@@ -115,7 +116,7 @@ def preprocess_F1pits(df: pd.DataFrame) -> pd.DataFrame:
     
 
     # Renaming columns to avoid issues when merging with other dfs
-    df=df.rename(columns={"lap":'lap_number',
+    df=df.rename(columns={"lap":'pit_stop_lap_number',
                           "time":"pit_stop_time",
                           "duration_in_milliseconds":"pit_stop_duration_in_milliseconds",
                           "duration":"pit_stop_duration",
