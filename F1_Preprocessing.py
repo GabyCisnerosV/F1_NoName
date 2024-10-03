@@ -16,7 +16,7 @@ def preprocess_F1_all(df: pd.DataFrame) -> pd.DataFrame:
     # Lower case columns
     df.columns=df.columns.str.lower()
     # Drop columns
-    df = df.drop(columns=['unnamed: 0.2','unnamed: 0.1', 'unnamed: 0'])
+    df = df.drop(columns=['unnamed: 0.2','unnamed: 0.1', 'unnamed: 0','unnamed: 0.3','unnamed: 0.4'])
     df = df.drop_duplicates()
     return df
 
