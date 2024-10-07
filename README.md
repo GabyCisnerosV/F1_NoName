@@ -1,28 +1,21 @@
-# F1_PredictingPodiumAlgorithm
+# 🏎️ F1_Predictor
 
-My name is Gabriela, and I follow F1 since I was around 10 years old. I am looking for an algorithm that helps me predict who will win the race several laps before it ends. This is a project in continuous progress as I am testing different algorithms to find the one that is closer to help me make my predictions
+Hi! My name is Gabriela, and I've been a passionate F1 fan since I was around 10 years old. I'm working on an algorithm to predict who will win the race several laps before it ends. This project is a continuous work in progress as I test different algorithms and paths to reach my goal.
 
-It is difficult, I know! :O
-There are a lot of factors that influence who wins a race in F1. Some of them can be predicted easily but some of them cannot.
+I know predicting a race outcome several laps before it ends (not even mention before it starts) is almost impossible 🥲 There are many factors that influence who wins a race in F1. Some can be predicted easily, while others cannot. Factors like accidents, different weather conditions, and race strategies all play a role. However, it’s worth trying and gaining experience along the way. 💪
 
-## What has been done...
+## 🚀 What Has Been Done...
 
-First, I tried to get a prediction directly from the features available in the Ergast API. As in the race there are several features that at the moment of the race we don't have available, the number of features selected for this first attempt were not the optimal, so the results were not optimal neither (file: Model.ipynb).
+1. **Initial Prediction Attempt**: I first tried to get a prediction directly from the features available in the Ergast API. Since some features are not available during the race, the number of features selected for this first attempt was not optimal, resulting in less accurate predictions (file: `3_Model_1.ipynb`).
 
-After this, I decided that it was better to predict some different factors of the race first, before trying to predict the whole result. For this resaon I attempted to predict the number of pit stops during an F1 race for each driver (file: Predicting_pitstops.ipynb)
+2. **Predicting Pit Stops**: I decided it would be better to predict different factors of the race first before trying to predict the overall result. Therefore, I attempted to predict the number of pit stops during an F1 race for each driver (file: `Predicting_pitstops.ipynb`).
 
-If you have a suggestion or an idea, please feel free to let me know ;)
+If you have any suggestions or ideas, please feel free to let me know! 😊
 
+## 📂 Repository Guide:
 
-## Repository Guide:
-
-  1_API_Requests_Ergast.py: File that extracts race, qualifying, pit stops and lap data from Ergast API.
-  
-  Ideas1.py: A space to write ideas.
-  
-  Model.ipynb: First attempt of predicting the podium directly from the information obtained, whitout predicting anything before.
- 
-  Predicting_pitstops.ipynb: Predicnting the number of pitstops in a race for each driver.
-  
-
-
+- `1_API_Requests_Ergast.py`: 📊 Extracts race, qualifying, pit stops, and lap data from the Ergast API.
+- `2_EDA_Part1.ipynb`: 📈 Provides initial insights on average speeds, lap times, podiums, and driver performance using Ergast API data.
+- `3_Model_1.ipynb`: 🏆 First attempt at predicting the podium directly from the Ergast API data without predicting any intermediate factors.
+- `F1_Preprocessing.py`: 🛠️ Contains customized functions to preprocess the data uniformly across the notebooks.
+- `Predicting_pitstops.ipynb`: ⛽ Predicts the number of pit stops in a race for each driver.
