@@ -8,6 +8,7 @@
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import LabelEncoder
+from dateutil.relativedelta import relativedelta
 
 ###########
 # Preprocessing for all Ergast DFs
@@ -60,7 +61,7 @@ def time_features_to_milliseconds(time_str: str) -> float:
 ###########
 # Each function does the basic preprocessing used for each dataframe:
 ###########
-def preprocess_F1results(df: pd.DataFrame) -> pd.DataFrame:
+def preprocess_F1results(df: pd.DataFrame, OneHotEncoder=False) -> pd.DataFrame:
     # Apply preprocessing for all
     df=preprocess_F1_all(df)
 
@@ -82,13 +83,45 @@ def preprocess_F1results(df: pd.DataFrame) -> pd.DataFrame:
     # Creating Season-Round feature
     df["season-round"] = df["season"].astype(str) + "-" + df["round"].astype(str)
 
+    # Create age feature
+    df["driver.dateofbirth"]=pd.to_datetime(df["driver.dateofbirth"])
+    df["date"]=pd.to_datetime(df["date"])
+    df["driver.age_at_race"] =df.apply(lambda row: relativedelta(row["date"], row["driver.dateofbirth"]).years, axis=1)
+
+    # Create higher level classes for final status
+    LapsPlus=['+1 Lap','+10 Laps','+11 Laps','+12 Laps','+14 Laps','+17 Laps','+2 Laps','+26 Laps','+3 Laps','+4 Laps','+42 Laps','+5 Laps','+6 Laps','+7 Laps','+8 Laps','+9 Laps']
+    mechanical_issues=['Alternator', 'Battery', 'Brake duct', 'Brakes', 'Broken wing', 'Clutch', 'Collision', 'Collision damage', 'Cooling system', 'Damage', 'Debris','Differential','Driver Seat', 'Driveshaft', 'Drivetrain', 'ERS', 'Electrical', 'Electronics', 'Engine', 'Engine fire', 'Engine misfire','Excluded', 'Exhaust','Fire', 'Front wing', 'Fuel', 'Fuel leak', 'Fuel pressure', 'Fuel pump', 'Fuel rig', 'Fuel system', 'Gearbox', 'Handling', 'Heat shield fire', 'Hydraulics','Launch control', 'Mechanical','Oil leak', 'Oil line', 'Oil pressure', 'Out of fuel', 'Overheating', 'Pneumatics', 'Power Unit','Power loss', 'Puncture', 'Radiator', 'Rear wing', 'Refuelling','Seat', 'Spark plugs', 'Spun off', 'Steering', 'Suspension', 'Technical', 'Throttle', 'Track rod', 'Transmission', 'Turbo', 'Tyre', 'Tyre puncture', 'Undertray', 'Vibrations', 'Water leak', 'Water pressure', 'Water pump', 'Wheel','Wheel nut', 'Wheel rim', 'Withdrew']
+    medical_issues=['Illness','Injured','Injury']
+    not_classified=['Did not qualify','Not classified']
+    df['final_status_grouped']=np.where(df["final_status"].isin(LapsPlus),'+Laps','Other')
+    df['final_status_grouped']=np.where(df["final_status"].isin(mechanical_issues),'Mechanical Issues',df['final_status_grouped'])
+    df['final_status_grouped']=np.where(df["final_status"].isin(medical_issues),'Medical Issues',df['final_status_grouped'])
+    df['final_status_grouped']=np.where(df["final_status"].isin(not_classified),'Not Classified',df['final_status_grouped'])
+    df['final_status_grouped']=np.where(df["final_status_grouped"]=='Other',df["final_status"],df['final_status_grouped'])
+
+    # Add features relative to other drivers in the same season-round
+    group_Season_round=df.groupby(["season", "round"]).agg(
+    race_time_millis_max_round_season=("race_time.millis", "max"),
+    race_time_millis_min_round_season=("race_time.millis", "min"),
+    race_time_millis_avg_round_season=("race_time.millis", "mean")).reset_index()
+    df=df.merge(group_Season_round,on=["season", "round"]) 
+    df["race_time_millis_to_max"]=df["race_time.millis"]-df["race_time_millis_max_round_season"]
+    df["race_time_millis_to_min"]=df["race_time.millis"]-df["race_time_millis_min_round_season"]
+    df["race_time_millis_to_avg"]=df["race_time.millis"]-df["race_time_millis_avg_round_season"]
+    
     # Encode features
-    for i in ['circuit.circuitid','constructor.constructorid','driverid']:
-        encoder=LabelEncoder()
-        encoder.fit(df[i])
-        encoder_values=encoder.transform(df[i])
-        name_encoded_feature=i+"_encoded"
-        df[name_encoded_feature]=encoder_values
+    to_encode=['circuit.circuitid','constructor.constructorid','driverid','final_status_grouped']
+
+    if OneHotEncoder==True:
+        df = pd.concat([pd.get_dummies(df, columns = to_encode),df[to_encode]],axis=1)
+
+    elif OneHotEncoder==False:
+        for i in to_encode:
+            encoder=LabelEncoder()
+            encoder.fit(df[i])
+            encoder_values=encoder.transform(df[i])
+            name_encoded_feature=i+"_encoded"
+            df[name_encoded_feature]=encoder_values
 
     return df
 
