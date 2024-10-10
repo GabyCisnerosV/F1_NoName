@@ -64,7 +64,7 @@ def time_features_to_milliseconds(time_str: str) -> float:
 # Each function does the basic preprocessing used for each dataframe:
 ##############################################################################
 
-def preprocess_F1results(df: pd.DataFrame, OneHotEncoder=False) -> pd.DataFrame:
+def preprocess_F1results(df: pd.DataFrame, OneHotEncoder=False,HandleNulls=True) -> pd.DataFrame:
     # Apply preprocessing for all
     df=preprocess_F1_all(df)
 
@@ -96,13 +96,14 @@ def preprocess_F1results(df: pd.DataFrame, OneHotEncoder=False) -> pd.DataFrame:
     df["driver.age_at_race"] =df.apply(lambda row: relativedelta(row["date"], row["driver.dateofbirth"]).years, axis=1)
 
     # Handling nulls:
-    # We see that there are nulls in race_time.millis features, all of them when the final status is not "Finished".
-    # Filling these casses with 999 999 999 milliseconds
-    for i in ['race_time.millis','fastestlap.rank','fastestlap.lap','fastestlap.time.time','fastestlap.time.in_milliseconds']:
-        df[i]=df[i].fillna(999999999)
+    if HandleNulls==True:
+        # We see that there are nulls in race_time.millis features, all of them when the final status is not "Finished".
+        # Filling these casses with 999 999 999 milliseconds
+        for i in ['race_time.millis','fastestlap.rank','fastestlap.lap','fastestlap.time.time','fastestlap.time.in_milliseconds']:
+            df[i]=df[i].fillna(999999999)
 
-    #in the following case we need a lower speed to represent when there was no fastest lap average speed
-    df['fastestlap.averagespeed.speed']=df['fastestlap.averagespeed.speed'].fillna(0)
+        #in the following case we need a lower speed to represent when there was no fastest lap average speed
+        df['fastestlap.averagespeed.speed']=df['fastestlap.averagespeed.speed'].fillna(0)
 
     # Create higher level classes for final status
     LapsPlus=['+1 Lap','+10 Laps','+11 Laps','+12 Laps','+14 Laps','+17 Laps','+2 Laps','+26 Laps','+3 Laps','+4 Laps','+42 Laps','+5 Laps','+6 Laps','+7 Laps','+8 Laps','+9 Laps']
