@@ -18,7 +18,7 @@ def preprocess_F1_all(df: pd.DataFrame) -> pd.DataFrame:
     # Lower case columns
     df.columns=df.columns.str.lower()
     # Drop columns
-    df = df.drop(columns=['unnamed: 0.2','unnamed: 0.1', 'unnamed: 0','unnamed: 0.3','unnamed: 0.4'])
+    df = df.drop(columns=['unnamed: 0.2','unnamed: 0.1', 'unnamed: 0','unnamed: 0.3','unnamed: 0.4','unnamed: 0.5'])
     df = df.drop_duplicates()
     return df
 
@@ -188,6 +188,21 @@ def preprocess_F1pits(df: pd.DataFrame) -> pd.DataFrame:
     return df.drop_duplicates()
 
 ##############################################################################
+# Function to convert columns to float where possible
+##############################################################################
+
+def convert_to_float(column):
+    if pd.api.types.is_numeric_dtype(column):
+        return column.astype(float)
+    elif pd.api.types.is_string_dtype(column):
+        try:
+            return column.astype(float)
+        except ValueError:
+            return column
+    else:
+        return column
+    
+##############################################################################
 # Function to add a retro view relative to Season-Round
 ##############################################################################
 
@@ -200,7 +215,7 @@ def get_past_rows(DF,N,iterator_feature,grouper_feature,features_added):
     features_added: features to add on the right
     """
     DF_Result=pd.DataFrame()
-    for obs in set(DF[iterator_feature].unique()[:2]):
+    for obs in set(DF[iterator_feature].unique()):
         #ALL DATA
         OBS_DF=DF[DF[iterator_feature]==obs].sort_values(by=grouper_feature).reset_index().drop(columns="index")
 
@@ -213,9 +228,13 @@ def get_past_rows(DF,N,iterator_feature,grouper_feature,features_added):
 
             #CONCATENATE
             OBS_DF=pd.concat([OBS_DF,OBS_DF_N],axis=1)
-
+        
+        #DROP NA ROWS AT THE BEGINNING:
+        OBS_DF = OBS_DF[~OBS_DF[OBS_DF_N.columns[-1]].isna()]
         DF_Result=pd.concat([DF_Result,OBS_DF])
 
+    #turn new columns into floats
+    DF_Result = DF_Result.apply(convert_to_float)
     return DF_Result
 
 
