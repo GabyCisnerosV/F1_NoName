@@ -10,9 +10,10 @@ import numpy as np
 from sklearn.preprocessing import LabelEncoder
 from dateutil.relativedelta import relativedelta
 
-###########
+##############################################################################
 # Preprocessing for all Ergast DFs
-###########
+##############################################################################
+
 def preprocess_F1_all(df: pd.DataFrame) -> pd.DataFrame:
     # Lower case columns
     df.columns=df.columns.str.lower()
@@ -21,9 +22,10 @@ def preprocess_F1_all(df: pd.DataFrame) -> pd.DataFrame:
     df = df.drop_duplicates()
     return df
 
-###########
+##############################################################################
 # Function to change time features to milliseconds
-###########
+##############################################################################
+
 def time_features_to_milliseconds(time_str: str) -> float:
     # Split time into its components (hours, minutes, seconds.milliseconds)
     parts = time_str.split(':')
@@ -58,9 +60,10 @@ def time_features_to_milliseconds(time_str: str) -> float:
 
     return total_milliseconds
 
-###########
+##############################################################################
 # Each function does the basic preprocessing used for each dataframe:
-###########
+##############################################################################
+
 def preprocess_F1results(df: pd.DataFrame, OneHotEncoder=False) -> pd.DataFrame:
     # Apply preprocessing for all
     df=preprocess_F1_all(df)
@@ -79,14 +82,27 @@ def preprocess_F1results(df: pd.DataFrame, OneHotEncoder=False) -> pd.DataFrame:
                           'time.millis':"race_time.millis",
                           'time.time':"race_time.time",
                           "driver.driverid":"driverid"})
+    
+    # Remove leading and trailing spaces in strings
+    df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)
 
     # Creating Season-Round feature
-    df["season-round"] = df["season"].astype(str) + "-" + df["round"].astype(str)
+    df["season-round"] = df["season"].astype(str) + "-" + df["round"].astype("str").str.zfill(2)
+    df["season-round-driverid"] = df["season"].astype(str) + "-" + df["round"].astype("str").str.zfill(2) + "-" + df["driverid"].astype(str)
 
     # Create age feature
     df["driver.dateofbirth"]=pd.to_datetime(df["driver.dateofbirth"])
     df["date"]=pd.to_datetime(df["date"])
     df["driver.age_at_race"] =df.apply(lambda row: relativedelta(row["date"], row["driver.dateofbirth"]).years, axis=1)
+
+    # Handling nulls:
+    # We see that there are nulls in race_time.millis features, all of them when the final status is not "Finished".
+    # Filling these casses with 999 999 999 milliseconds
+    for i in ['race_time.millis','fastestlap.rank','fastestlap.lap','fastestlap.time.time','fastestlap.time.in_milliseconds']:
+        df[i]=df[i].fillna(999999999)
+
+    #in the following case we need a lower speed to represent when there was no fastest lap average speed
+    df['fastestlap.averagespeed.speed']=df['fastestlap.averagespeed.speed'].fillna(0)
 
     # Create higher level classes for final status
     LapsPlus=['+1 Lap','+10 Laps','+11 Laps','+12 Laps','+14 Laps','+17 Laps','+2 Laps','+26 Laps','+3 Laps','+4 Laps','+42 Laps','+5 Laps','+6 Laps','+7 Laps','+8 Laps','+9 Laps']
@@ -108,7 +124,7 @@ def preprocess_F1results(df: pd.DataFrame, OneHotEncoder=False) -> pd.DataFrame:
     df["race_time_millis_to_max"]=df["race_time.millis"]-df["race_time_millis_max_round_season"]
     df["race_time_millis_to_min"]=df["race_time.millis"]-df["race_time_millis_min_round_season"]
     df["race_time_millis_to_avg"]=df["race_time.millis"]-df["race_time_millis_avg_round_season"]
-    
+
     # Encode features
     to_encode=['circuit.circuitid','constructor.constructorid','driverid','final_status_grouped']
 
@@ -123,7 +139,12 @@ def preprocess_F1results(df: pd.DataFrame, OneHotEncoder=False) -> pd.DataFrame:
             name_encoded_feature=i+"_encoded"
             df[name_encoded_feature]=encoder_values
 
-    return df
+    df=df.drop(columns=["final_status",'driver.url','driver.permanentnumber',
+                        'driver.code','race_time.time','fastestlap.averagespeed.units']) #this features do not add anything in the analysis and cause duplicates
+
+    return df.drop_duplicates()
+
+##############################################################################
 
 def preprocess_F1laps(df: pd.DataFrame) -> pd.DataFrame:
     # Apply preprocessing for all
@@ -136,10 +157,14 @@ def preprocess_F1laps(df: pd.DataFrame) -> pd.DataFrame:
     df=df.rename(columns={'lapnumber':"current_lap_number",
                           'position':"current_position"})
     
+    # Remove leading and trailing spaces in strings
+    df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)
+
     # drop columns
     df=df.drop(columns=["time"])
-    return df
+    return df.drop_duplicates()
 
+##############################################################################
 
 def preprocess_F1pits(df: pd.DataFrame) -> pd.DataFrame:
     # Apply preprocessing for all
@@ -156,9 +181,41 @@ def preprocess_F1pits(df: pd.DataFrame) -> pd.DataFrame:
                           "duration":"pit_stop_duration",
                           "stop":"pit_stop_number"})
 
-    return df
+    # Remove leading and trailing spaces in strings
+    df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)
 
+    return df.drop_duplicates()
 
+##############################################################################
+# Function to add a retro view relative to Season-Round
+##############################################################################
+
+def get_past_rows(DF,N,iterator_feature,grouper_feature,features_added):
+    """
+    DF: Base dataframe
+    N: number of rows from the past we want in current observation
+    iterator_feature: feature by what the df is being iterated (ex: driverid)
+    grouper_feature: feature by what the df is being grouped (ex: season-round)
+    features_added: features to add on the right
+    """
+    DF_Result=pd.DataFrame()
+    for obs in set(DF[iterator_feature].unique()[:2]):
+        #ALL DATA
+        OBS_DF=DF[DF[iterator_feature]==obs].sort_values(by=grouper_feature).reset_index().drop(columns="index")
+
+        for N_num in range(N):
+            #CREATE ANOTHER ONE ADDING N NUMBER OF ROWS ON TOP AND DELETING N AT THE BOTTOM
+            empty_rows = pd.DataFrame(columns=OBS_DF.columns, index=list(range(N))[:N_num+1])
+            OBS_DF_N = pd.concat([empty_rows, OBS_DF], ignore_index=True)[features_added]
+            OBS_DF_N = OBS_DF_N[:len(OBS_DF_N)-N_num-1]
+            OBS_DF_N = OBS_DF_N.add_suffix(f'-{N_num+1}')
+
+            #CONCATENATE
+            OBS_DF=pd.concat([OBS_DF,OBS_DF_N],axis=1)
+
+        DF_Result=pd.concat([DF_Result,OBS_DF])
+
+    return DF_Result
 
 
 
