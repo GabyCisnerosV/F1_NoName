@@ -87,8 +87,8 @@ def preprocess_F1results(df: pd.DataFrame, OneHotEncoder=False,HandleNulls=True)
     df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)
 
     # Creating Season-Round feature
-    df["season-round"] = df["season"].astype(str) + "-" + df["round"].astype("str").str.zfill(2)
-    df["season-round-driverid"] = df["season"].astype(str) + "-" + df["round"].astype("str").str.zfill(2) + "-" + df["driverid"].astype(str)
+    df["season-round"] = df["season"].astype(str) + df["round"].astype("str").str.zfill(2)
+    df["season-round-driverid"] = df["season"].astype(str) + df["round"].astype("str").str.zfill(2) + "-" + df["driverid"].astype(str)
 
     # Create age feature
     df["driver.dateofbirth"]=pd.to_datetime(df["driver.dateofbirth"])
@@ -131,6 +131,7 @@ def preprocess_F1results(df: pd.DataFrame, OneHotEncoder=False,HandleNulls=True)
 
     if OneHotEncoder==True:
         df = pd.concat([pd.get_dummies(df, columns = to_encode),df[to_encode]],axis=1)
+        df=df.drop(columns=["final_status",'fastestlap.averagespeed.units'])
 
     elif OneHotEncoder==False:
         for i in to_encode:
@@ -140,8 +141,8 @@ def preprocess_F1results(df: pd.DataFrame, OneHotEncoder=False,HandleNulls=True)
             name_encoded_feature=i+"_encoded"
             df[name_encoded_feature]=encoder_values
 
-    df=df.drop(columns=["final_status",'driver.url','driver.permanentnumber',
-                        'driver.code','race_time.time','fastestlap.averagespeed.units']) #this features do not add anything in the analysis and cause duplicates
+    df=df.drop(columns=['driver.url','driver.permanentnumber',
+                        'driver.code','race_time.time']) #this features do not add anything in the analysis and cause duplicates
 
     return df.drop_duplicates()
 
@@ -217,7 +218,7 @@ def get_past_rows(DF,N,iterator_feature,grouper_feature,features_added):
     DF_Result=pd.DataFrame()
     for obs in set(DF[iterator_feature].unique()):
         #ALL DATA
-        OBS_DF=DF[DF[iterator_feature]==obs].sort_values(by=grouper_feature).reset_index().drop(columns="index")
+        OBS_DF=DF[DF[iterator_feature]==obs].sort_values(by=grouper_feature).reset_index().drop(columns=["index"])
 
         for N_num in range(N):
             #CREATE ANOTHER ONE ADDING N NUMBER OF ROWS ON TOP AND DELETING N AT THE BOTTOM
