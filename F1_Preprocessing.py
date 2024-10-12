@@ -1,7 +1,7 @@
 ##############################################################################
 #### F1 Preprocessing
 ##############################################################################
-# This package helps preprocess the data extracted from ERGAST
+# This functions help preprocess the data extracted from ERGAST
 # In this way the preprocessing for every experiment is done faster and consistently
 
 ###########
