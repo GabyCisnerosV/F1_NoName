@@ -122,9 +122,9 @@ def preprocess_F1results(df: pd.DataFrame, OneHotEncoder=False,HandleNulls=True)
     race_time_millis_min_round_season=("race_time.millis", "min"),
     race_time_millis_avg_round_season=("race_time.millis", "mean")).reset_index()
     df=df.merge(group_Season_round,on=["season", "round"]) 
-    df["race_time_millis_to_max_ratio"]=df["race_time.millis"]-df["race_time_millis_max_round_season"]/df["race_time_millis_max_round_season"]
-    df["race_time_millis_to_min_ratio"]=df["race_time.millis"]-df["race_time_millis_min_round_season"]/df["race_time_millis_min_round_season"]
-    df["race_time_millis_to_avg_ratio"]=df["race_time.millis"]-df["race_time_millis_avg_round_season"]/df["race_time_millis_avg_round_season"]
+    df["race_time_millis_to_max_ratio"]=(df["race_time.millis"]-df["race_time_millis_max_round_season"])/df["race_time_millis_max_round_season"]
+    df["race_time_millis_to_min_ratio"]=(df["race_time.millis"]-df["race_time_millis_min_round_season"])/df["race_time_millis_min_round_season"]
+    df["race_time_millis_to_avg_ratio"]=(df["race_time.millis"]-df["race_time_millis_avg_round_season"])/df["race_time_millis_avg_round_season"]
 
     # Encode features
     to_encode=['circuit.circuitid','constructor.constructorid','driverid','final_status_grouped']
