@@ -24,7 +24,8 @@ If you have any suggestions or ideas, please feel free to let me know! 😊
 
 - `1_API_Requests_Ergast.py`: 📊 Extracts race, qualifying, pit stops, and lap data from the Ergast API.
 - `2_EDA_Part1.ipynb`: 📈 Provides initial insights on average speeds, lap times, podiums, and driver performance using Ergast API data.
-- `3_Model_1.ipynb`: 🏆 First attempt at predicting the podium directly from the Ergast API data only available before the race.
+- `3_Model_1_PredictingFinalPositions`: 🏆 First attempt at predicting the podium directly from the Ergast API data only available before the race.
+- `3_Model_2_PredictingPitStops.ipynb`: ⛽ Predicts the number of pit stops in a race for each driver.
 - `F1_Preprocessing.py`: 🛠️ Contains customized functions to preprocess the data uniformly across the notebooks.
 - `F1_Modelling_Extra_Functions.py`: ⚙️ Contains customized functions to evaluate models.
-- `Predicting_pitstops.ipynb`: ⛽ Predicts the number of pit stops in a race for each driver.
+
