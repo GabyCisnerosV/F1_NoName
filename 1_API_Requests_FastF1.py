@@ -1,4 +1,3 @@
-
 ##############################################################################
 #### 1_API_REQUESTS_FASTF1
 ##############################################################################
@@ -11,13 +10,24 @@ import fastf1
 import pandas as pd
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-y_start, y_end = 2014, 2025  # Range of years
+y_start, y_end = 2020, 2021  # Range of years
 r_start, r_end = 1, 30  # Range of races in each year
 
 ##############################################################################
-### Dataframes I want to store:
-WeatherData= pd.DataFrame()
-LapsData= pd.DataFrame()
+### Upload Existing files to update (if it does not exist safe empty file and then run)
+
+# Check stored data
+path = 'C:/Users/gabri/Dropbox/Gaby/Proyectos/My_Portafolio/F1/Data/'
+weather_file = path + "FASTF1_Weather.csv"
+laps_file = path + "FASTF1_Laps.csv"
+# weather_pre, laps_pre= pd.DataFrame(), pd.DataFrame()
+
+# #check if files are alredy stored or this are the first files
+WeatherData = pd.read_csv(weather_file)
+LapsData = pd.read_csv(laps_file)
+
+initial_len_weather=len(WeatherData)
+initial_len_laps=len(LapsData)
 
 ##############################################################################
 ### Function to get data
@@ -53,7 +63,7 @@ def getting_session_data(year, race, event):
 
 ##############################################################################
 ###  Extract data in parallel
-with ThreadPoolExecutor(max_workers=1) as executor:
+with ThreadPoolExecutor(max_workers=3) as executor:
     future_to_session = {executor.submit(getting_session_data, year, race, event): (year, race, event)
                          for year in range(y_start, y_end)
                          for race in range(r_start, r_end)
@@ -64,50 +74,22 @@ with ThreadPoolExecutor(max_workers=1) as executor:
         if session_data is not None:
             if 'weather' in session_data:
                 WeatherData=pd.concat([WeatherData,session_data['weather']])
+                cols_to_drop=WeatherData.loc[:, WeatherData.columns.str.startswith("Unnamed")].columns.to_list()
+                WeatherData.drop(columns=cols_to_drop).drop_duplicates().to_csv(weather_file,index=False)
+                
             if 'laps' in session_data:
-                LapsData=pd.concat([LapsData,session_data['laps']])
+                LapsData=pd.concat([LapsData,session_data['laps']]).drop_duplicates()
+                cols_to_drop=LapsData.loc[:, LapsData.columns.str.startswith("Unnamed")].columns.to_list()
+                LapsData.drop(columns=cols_to_drop).drop_duplicates().to_csv(laps_file,index=False)
+
+
 
 
 # Display summaries of the data
-print(f"Total weather records: {len(WeatherData)}")
-print(f"Total laps records: {len(LapsData)}")
+print(f"Total weather records before: {initial_len_weather}")
+print(f"Total laps records before: {initial_len_laps}")
+
+print(f"Total weather records after: {len(WeatherData)}")
+print(f"Total laps records after: {len(LapsData)}")
 
 
-##############################################################################
-### Update Existing files
-
-# Check stored data
-path = 'C:/Users/gabri/Dropbox/Gaby/Proyectos/My_Portafolio/F1/Data/'
-weather_file = path + "FASTF1_Weather.csv"
-laps_file = path + "FASTF1_Laps.csv"
-weather_pre, laps_pre= pd.DataFrame(), pd.DataFrame()
-
-# # #check if files are alredy stored or this are the first files
-# weather_pre = pd.read_csv(weather_file)
-# laps_pre = pd.read_csv(laps_file)
-
-# # Updating or creating dfs
-# if weather_pre is not None:
-#     weather_updated = pd.concat([WeatherData, weather_pre]).drop_duplicates()
-# else:
-#     weather_updated = WeatherData
-
-# if laps_pre is not None:
-#     laps_updated = pd.concat([LapsData, laps_pre]).drop_duplicates()
-# else:
-#     laps_updated = LapsData
-
-# # Check changes
-# dfs={"Weather Before:":weather_pre,
-#      "Laps Before:":laps_pre,
-#      "Weather After:":weather_updated,
-#      "Laps After:":laps_updated}
-# for k,v in dfs.items():
-#     print(k,len(v))
-
-# # Save updated dataframes to CSV
-# weather_updated.to_csv(weather_file, index=False)
-# laps_updated.to_csv(laps_file, index=False)
-
-WeatherData.to_csv(weather_file, index=False)
-LapsData.to_csv(laps_file, index=False)

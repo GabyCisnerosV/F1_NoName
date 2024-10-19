@@ -17,8 +17,13 @@ from dateutil.relativedelta import relativedelta
 def ERGAST_preprocess_F1_all(df: pd.DataFrame) -> pd.DataFrame:
     # Lower case columns
     df.columns=df.columns.str.lower()
+
+    # Remove leading and trailing spaces in strings
+    df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)
+
     # Drop columns
-    df = df.drop(columns=['unnamed: 0.2','unnamed: 0.1', 'unnamed: 0','unnamed: 0.3','unnamed: 0.4','unnamed: 0.5'])
+    cols_to_drop=df.loc[:, df.columns.str.startswith("unnamed")].columns.to_list()
+    df = df.drop(columns=cols_to_drop)
     df = df.drop_duplicates()
     return df
 
@@ -82,9 +87,6 @@ def preprocess_Ergast_Results(df: pd.DataFrame, OneHotEncoder=False,HandleNulls=
                           'time.millis':"race_time.millis",
                           'time.time':"race_time.time",
                           "driver.driverid":"driverid"})
-    
-    # Remove leading and trailing spaces in strings
-    df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)
 
     # Creating Season-Round feature
     df["season-round"] = df["season"].astype(str) + df["round"].astype("str").str.zfill(2)
@@ -153,13 +155,10 @@ def preprocess_Ergast_Laps(df: pd.DataFrame) -> pd.DataFrame:
 
     # Change to Milliseconds:
     df['lap_duration_in_miliseconds']=df['lapduration'].apply(lambda x: None if x is None else time_features_to_milliseconds(str(x)))
-    
+
     #rename columns
     df=df.rename(columns={'lapnumber':"current_lap_number",
                           'position':"current_position"})
-    
-    # Remove leading and trailing spaces in strings
-    df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)
 
     # drop columns
     df=df.drop(columns=["time"])
@@ -174,7 +173,6 @@ def preprocess_Ergast_Pits(df: pd.DataFrame) -> pd.DataFrame:
     # Change to Milliseconds:
     df['duration_in_milliseconds']=df['duration'].apply(lambda x: None if x is None else time_features_to_milliseconds(str(x)))
     
-
     # Renaming columns to avoid issues when merging with other dfs
     df=df.rename(columns={"lap":'pit_stop_lap_number',
                           "time":"pit_stop_time",
@@ -249,7 +247,8 @@ def FASTF1_preprocess_F1_all(df: pd.DataFrame) -> pd.DataFrame:
     # Remove leading and trailing spaces in strings
     df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)
     # Drop columns
-    df = df.drop_duplicates()
+    cols_to_drop=df.loc[:, df.columns.str.startswith("unnamed")].columns.to_list()
+    df = df.drop(columns=cols_to_drop).drop_duplicates()
     return df
 
 def preprocess_FastF1_Weather(df: pd.DataFrame, OneHotEncoder=False) -> pd.DataFrame:
@@ -267,17 +266,16 @@ def preprocess_FastF1_Weather(df: pd.DataFrame, OneHotEncoder=False) -> pd.DataF
     # Normalize features
     cols_to_norm=['airtemp', 'humidity', 'pressure', 'rainfall', 'tracktemp','winddirection', 'windspeed']
 
-    scaler = MinMaxScaler()
-    normalized_df = pd.DataFrame(scaler.fit_transform(df), columns=df.columns)
-    normalized_df = normalized_df.add_prefix('_normalized')
-    df=pd.concat([df,normalized_df],axis=1)
+    # scaler = MinMaxScaler()
+    # normalized_df = pd.DataFrame(scaler.fit_transform(df[cols_to_norm]), columns=df[cols_to_norm].columns)
+    # normalized_df = normalized_df.add_prefix('normalized_')
+    # df=pd.concat([df,normalized_df],axis=1)
 
     # Encode features
     to_encode=['event']
 
     if OneHotEncoder==True:
         df = pd.concat([pd.get_dummies(df, columns = to_encode),df[to_encode]],axis=1)
-        df=df.drop(columns=["final_status",'fastestlap.averagespeed.units'])
 
     elif OneHotEncoder==False:
         for i in to_encode:
