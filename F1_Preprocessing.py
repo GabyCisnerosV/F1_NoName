@@ -7,7 +7,7 @@
 ###########
 import pandas as pd
 import numpy as np
-from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import LabelEncoder,MinMaxScaler
 from dateutil.relativedelta import relativedelta
 
 ##############################################################################
@@ -141,8 +141,7 @@ def preprocess_Ergast_Results(df: pd.DataFrame, OneHotEncoder=False,HandleNulls=
             name_encoded_feature=i+"_encoded"
             df[name_encoded_feature]=encoder_values
 
-    df=df.drop(columns=['driver.url','driver.permanentnumber',
-                        'driver.code','race_time.time']) #this features do not add anything in the analysis and cause duplicates
+    df=df.drop(columns=['driver.url','driver.permanentnumber','race_time.time']) #this features do not add anything in the analysis and cause duplicates
 
     return df.drop_duplicates()
 
@@ -241,10 +240,54 @@ def get_past_rows_Ergast(DF,N,iterator_feature,grouper_feature,features_added):
 
 
 ##############################################################################
-#>>>>>> Ergast DFs
+#>>>>>> Fast F1 DFs
 ##############################################################################
 
+def FASTF1_preprocess_F1_all(df: pd.DataFrame) -> pd.DataFrame:
+    # Lower case columns
+    df.columns=df.columns.str.lower()
+    # Remove leading and trailing spaces in strings
+    df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)
+    # Drop columns
+    df = df.drop_duplicates()
+    return df
 
+def preprocess_FastF1_Weather(df: pd.DataFrame, OneHotEncoder=False) -> pd.DataFrame:
+    
+    # Apply preprocessing for all
+    df=FASTF1_preprocess_F1_all(df)
+    
+    # Renaming columns to avoid issues when merging with other dfs
+    df=df.rename(columns={'session':"round"})
+
+    # Creating Season-Round feature
+    df["season-round"] = df["season"].astype(str) + df["round"].astype("str").str.zfill(2)
+    df["season-round-event"] = df["season"].astype(str) + df["round"].astype("str").str.zfill(2) + "-" + df["event"].astype(str)
+
+    # Normalize features
+    cols_to_norm=['airtemp', 'humidity', 'pressure', 'rainfall', 'tracktemp','winddirection', 'windspeed']
+
+    scaler = MinMaxScaler()
+    normalized_df = pd.DataFrame(scaler.fit_transform(df), columns=df.columns)
+    normalized_df = normalized_df.add_prefix('_normalized')
+    df=pd.concat([df,normalized_df],axis=1)
+
+    # Encode features
+    to_encode=['event']
+
+    if OneHotEncoder==True:
+        df = pd.concat([pd.get_dummies(df, columns = to_encode),df[to_encode]],axis=1)
+        df=df.drop(columns=["final_status",'fastestlap.averagespeed.units'])
+
+    elif OneHotEncoder==False:
+        for i in to_encode:
+            encoder=LabelEncoder()
+            encoder.fit(df[i])
+            encoder_values=encoder.transform(df[i])
+            name_encoded_feature=i+"_encoded"
+            df[name_encoded_feature]=encoder_values
+
+    return df.drop_duplicates()
 
 
 
