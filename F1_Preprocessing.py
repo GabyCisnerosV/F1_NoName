@@ -1,7 +1,7 @@
 ##############################################################################
 #### F1 Preprocessing
 ##############################################################################
-# This functions help preprocess the data extracted from ERGAST
+# This functions help preprocess the data extracted from ERGAST and FASTF1
 # In this way the preprocessing for every experiment is done faster and consistently
 
 ###########
@@ -11,10 +11,10 @@ from sklearn.preprocessing import LabelEncoder
 from dateutil.relativedelta import relativedelta
 
 ##############################################################################
-# Preprocessing for all Ergast DFs
+# >>>>>> Ergast DFs
 ##############################################################################
 
-def preprocess_F1_all(df: pd.DataFrame) -> pd.DataFrame:
+def ERGAST_preprocess_F1_all(df: pd.DataFrame) -> pd.DataFrame:
     # Lower case columns
     df.columns=df.columns.str.lower()
     # Drop columns
@@ -64,9 +64,9 @@ def time_features_to_milliseconds(time_str: str) -> float:
 # Each function does the basic preprocessing used for each dataframe:
 ##############################################################################
 
-def preprocess_F1results(df: pd.DataFrame, OneHotEncoder=False,HandleNulls=True) -> pd.DataFrame:
+def preprocess_Ergast_Results(df: pd.DataFrame, OneHotEncoder=False,HandleNulls=True) -> pd.DataFrame:
     # Apply preprocessing for all
-    df=preprocess_F1_all(df)
+    df=ERGAST_preprocess_F1_all(df)
 
     # Change to Milliseconds:
     df['fastestlap.time.in_milliseconds']=df['fastestlap.time.time'].apply(lambda x: None if x is None else time_features_to_milliseconds(str(x)))
@@ -148,9 +148,9 @@ def preprocess_F1results(df: pd.DataFrame, OneHotEncoder=False,HandleNulls=True)
 
 ##############################################################################
 
-def preprocess_F1laps(df: pd.DataFrame) -> pd.DataFrame:
+def preprocess_Ergast_Laps(df: pd.DataFrame) -> pd.DataFrame:
     # Apply preprocessing for all
-    df=preprocess_F1_all(df)
+    df=ERGAST_preprocess_F1_all(df)
 
     # Change to Milliseconds:
     df['lap_duration_in_miliseconds']=df['lapduration'].apply(lambda x: None if x is None else time_features_to_milliseconds(str(x)))
@@ -168,9 +168,9 @@ def preprocess_F1laps(df: pd.DataFrame) -> pd.DataFrame:
 
 ##############################################################################
 
-def preprocess_F1pits(df: pd.DataFrame) -> pd.DataFrame:
+def preprocess_Ergast_Pits(df: pd.DataFrame) -> pd.DataFrame:
     # Apply preprocessing for all
-    df=preprocess_F1_all(df)
+    df=ERGAST_preprocess_F1_all(df)
 
     # Change to Milliseconds:
     df['duration_in_milliseconds']=df['duration'].apply(lambda x: None if x is None else time_features_to_milliseconds(str(x)))
@@ -207,7 +207,7 @@ def convert_to_float(column):
 # Function to add a retro view relative to Season-Round
 ##############################################################################
 
-def get_past_rows(DF,N,iterator_feature,grouper_feature,features_added):
+def get_past_rows_Ergast(DF,N,iterator_feature,grouper_feature,features_added):
     """
     DF: Base dataframe
     N: number of rows from the past we want in current observation
@@ -239,6 +239,10 @@ def get_past_rows(DF,N,iterator_feature,grouper_feature,features_added):
     return DF_Result
 
 
+
+##############################################################################
+#>>>>>> Ergast DFs
+##############################################################################
 
 
 

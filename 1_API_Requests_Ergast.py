@@ -5,6 +5,7 @@
 ##############################################################################
 # f1 Results from https://ergast.com/mrd/ . This sourcce will stop working in 2024.
 ##############################################################################
+# Not parallel, built in 2022
 
 import requests
 import pandas as pd
