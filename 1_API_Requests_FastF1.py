@@ -11,8 +11,8 @@ import pandas as pd
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-y_start, y_end = 2023, 2024  # Range of years
-r_start, r_end = 1, 10  # Range of races in each year
+y_start, y_end = 2024, 2025  # Range of years
+r_start, r_end = 1, 30  # Range of races in each year
 
 ##############################################################################
 ### Upload Existing files to update (if it does not exist safe empty file and then run)
