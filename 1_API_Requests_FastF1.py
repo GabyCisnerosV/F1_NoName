@@ -8,10 +8,11 @@
 
 import fastf1
 import pandas as pd
+import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-y_start, y_end = 2020, 2021  # Range of years
-r_start, r_end = 1, 30  # Range of races in each year
+y_start, y_end = 2023, 2024  # Range of years
+r_start, r_end = 1, 10  # Range of races in each year
 
 ##############################################################################
 ### Upload Existing files to update (if it does not exist safe empty file and then run)
@@ -55,6 +56,7 @@ def getting_session_data(year, race, event):
             result['laps'] = laps
 
         print(f">>>> Season {year} - Race {race}: {event} data extracted.")
+        time.sleep(60)
         return result
     
     except Exception as e:
@@ -62,8 +64,8 @@ def getting_session_data(year, race, event):
         return None
 
 ##############################################################################
-###  Extract data in parallel
-with ThreadPoolExecutor(max_workers=3) as executor:
+###  Extract data using threads
+with ThreadPoolExecutor(max_workers=5) as executor:
     future_to_session = {executor.submit(getting_session_data, year, race, event): (year, race, event)
                          for year in range(y_start, y_end)
                          for race in range(r_start, r_end)
@@ -81,7 +83,6 @@ with ThreadPoolExecutor(max_workers=3) as executor:
                 LapsData=pd.concat([LapsData,session_data['laps']]).drop_duplicates()
                 cols_to_drop=LapsData.loc[:, LapsData.columns.str.startswith("Unnamed")].columns.to_list()
                 LapsData.drop(columns=cols_to_drop).drop_duplicates().to_csv(laps_file,index=False)
-
 
 
 

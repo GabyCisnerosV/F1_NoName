@@ -25,6 +25,7 @@ def ERGAST_preprocess_F1_all(df: pd.DataFrame) -> pd.DataFrame:
     cols_to_drop=df.loc[:, df.columns.str.startswith("unnamed")].columns.to_list()
     df = df.drop(columns=cols_to_drop)
     df = df.drop_duplicates()
+    df = df.reset_index().drop(columns=["index"])
     return df
 
 ##############################################################################
@@ -166,22 +167,39 @@ def preprocess_Ergast_Laps(df: pd.DataFrame) -> pd.DataFrame:
 
 ##############################################################################
 
-def preprocess_Ergast_Pits(df: pd.DataFrame) -> pd.DataFrame:
+def preprocess_Ergast_Pits(df: pd.DataFrame,OneHotEncoder=False) -> pd.DataFrame:
     # Apply preprocessing for all
     df=ERGAST_preprocess_F1_all(df)
 
     # Change to Milliseconds:
     df['duration_in_milliseconds']=df['duration'].apply(lambda x: None if x is None else time_features_to_milliseconds(str(x)))
     
+    # Creating Season-Round feature
+    df["season-round"] = df["season"].astype(str) + df["round"].astype("str").str.zfill(2)
+    df["season-round-driverid"] = df["season"].astype(str) + df["round"].astype("str").str.zfill(2) + "-" + df["driverid"].astype(str)
+
     # Renaming columns to avoid issues when merging with other dfs
     df=df.rename(columns={"lap":'pit_stop_lap_number',
                           "time":"pit_stop_time",
                           "duration_in_milliseconds":"pit_stop_duration_in_milliseconds",
                           "duration":"pit_stop_duration",
                           "stop":"pit_stop_number"})
+    
+    # fix circuit id in baku
+    df["circuit.circuitid"]=np.where(df["circuit.circuitid"]=="BAK","baku",df["circuit.circuitid"])
+    # Encode features
+    to_encode=['circuit.circuitid','driverid']
 
-    # Remove leading and trailing spaces in strings
-    df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)
+    if OneHotEncoder==True:
+        df = pd.concat([pd.get_dummies(df, columns = to_encode),df[to_encode]],axis=1)
+
+    elif OneHotEncoder==False:
+        for i in to_encode:
+            encoder=LabelEncoder()
+            encoder.fit(df[i])
+            encoder_values=encoder.transform(df[i])
+            name_encoded_feature=i+"_encoded"
+            df[name_encoded_feature]=encoder_values
 
     return df.drop_duplicates()
 
@@ -249,7 +267,10 @@ def FASTF1_preprocess_F1_all(df: pd.DataFrame) -> pd.DataFrame:
     # Drop columns
     cols_to_drop=df.loc[:, df.columns.str.startswith("unnamed")].columns.to_list()
     df = df.drop(columns=cols_to_drop).drop_duplicates()
+    df = df.reset_index().drop(columns=["index"])
     return df
+
+##############################################################################
 
 def preprocess_FastF1_Weather(df: pd.DataFrame, OneHotEncoder=False) -> pd.DataFrame:
     
@@ -266,10 +287,10 @@ def preprocess_FastF1_Weather(df: pd.DataFrame, OneHotEncoder=False) -> pd.DataF
     # Normalize features
     cols_to_norm=['airtemp', 'humidity', 'pressure', 'rainfall', 'tracktemp','winddirection', 'windspeed']
 
-    # scaler = MinMaxScaler()
-    # normalized_df = pd.DataFrame(scaler.fit_transform(df[cols_to_norm]), columns=df[cols_to_norm].columns)
-    # normalized_df = normalized_df.add_prefix('normalized_')
-    # df=pd.concat([df,normalized_df],axis=1)
+    scaler = MinMaxScaler()
+    normalized_df = pd.DataFrame(scaler.fit_transform(df[cols_to_norm]), columns=df[cols_to_norm].columns)
+    normalized_df = normalized_df.add_prefix('normalized_')
+    df=pd.concat([df,normalized_df],axis=1)
 
     # Encode features
     to_encode=['event']
@@ -287,5 +308,49 @@ def preprocess_FastF1_Weather(df: pd.DataFrame, OneHotEncoder=False) -> pd.DataF
 
     return df.drop_duplicates()
 
+##############################################################################
 
+def preprocess_FastF1_Laps(df: pd.DataFrame, OneHotEncoder=False) -> pd.DataFrame:
+    
+    # Apply preprocessing for all
+    df=FASTF1_preprocess_F1_all(df)
+    
+    # Renaming columns to avoid issues when merging with other dfs
+    df=df.rename(columns={'session':"round"})
 
+    # Creating Season-Round feature
+    df["season-round"] = df["season"].astype(str) + df["round"].astype("str").str.zfill(2)
+    df["season-round-event"] = df["season"].astype(str) + df["round"].astype("str").str.zfill(2) + "-" + df["event"].astype(str)
+
+    # Normalize features
+    cols_to_norm=['tyrelife']
+
+    scaler = MinMaxScaler()
+    normalized_df = pd.DataFrame(scaler.fit_transform(df[cols_to_norm]), columns=df[cols_to_norm].columns)
+    normalized_df = normalized_df.add_prefix('normalized_')
+    df=pd.concat([df,normalized_df],axis=1)
+
+    # Change compound (fll na) and add numerical feature
+    df["compound"]=np.where(df["compound"].isin(['TEST', 'UNKNOWN','TEST_UNKNOWN']),"TEST-UNKNOWN",df["compound"])
+    df["compound"]=df["compound"].fillna("TEST-UNKNOWN")
+
+    Compoundmap={'TEST-UNKNOWN':None, 'INTERMEDIATE':7, 'WET':8, 'SUPERSOFT':3, 'SOFT':4,
+       'MEDIUM':5, 'ULTRASOFT':2, 'HYPERSOFT':1, 'HARD':6}
+    
+    df["compound_cat"]=df["compound"].map(Compoundmap)
+
+    # Encode features
+    to_encode=['compound','event']
+
+    if OneHotEncoder==True:
+        df = pd.concat([pd.get_dummies(df, columns = to_encode),df[to_encode]],axis=1)
+
+    elif OneHotEncoder==False:
+        for i in to_encode:
+            encoder=LabelEncoder()
+            encoder.fit(df[i])
+            encoder_values=encoder.transform(df[i])
+            name_encoded_feature=i+"_encoded"
+            df[name_encoded_feature]=encoder_values
+
+    return df.drop_duplicates()
