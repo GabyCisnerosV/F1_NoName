@@ -16,14 +16,16 @@ I know predicting a race outcome several laps before it ends (not even mention b
 
    Final thoughts: Using just data like past final positions, final grid , driver, circuit, etc, is not enough to have accurate predictions on the final positions in a race. In the next attempt we try to add more features predicted and from other sources.
 
-5. **Predicting Pit Stops**: I decided it would be better to predict different factors of the race first before trying to predict the overall result. Therefore, I attempted to predict the number of pit stops during an F1 race for each driver (file: `Predicting_pitstops.ipynb`).
+2. **Predicting Pit Stops**: I decided it would be better to predict different factors of the race first before trying to predict the overall result. Therefore, I attempted to predict the number of pit stops during an F1 race for each driver (file: `Predicting_pitstops.ipynb`).
 
 If you have any suggestions or ideas, please feel free to let me know! 😊
 
 ## 📂 Repository Guide:
 
 - `1_API_Requests_Ergast.py`: 📊 Extracts race, qualifying, pit stops, and lap data from the Ergast API.
+- `1_API_Requests_FastF1.py`: 🌤️ Extracts data related to laps and weather from FastF1 API.
 - `2_EDA_Part1.ipynb`: 📈 Provides initial insights on average speeds, lap times, podiums, and driver performance using Ergast API data.
+- `2_EDA_Part2.ipynb`: 🛞 Insights focused on pit stops and related features like weather and compounds. Data from Ergast API and FastF1 API.
 - `3_Model_1_PredictingFinalPositions`: 🏆 First attempt at predicting the podium directly from the Ergast API data only available before the race.
 - `3_Model_2_PredictingPitStops.ipynb`: ⛽ Predicts the number of pit stops in a race for each driver.
 - `F1_Preprocessing.py`: 🛠️ Contains customized functions to preprocess the data uniformly across the notebooks.
