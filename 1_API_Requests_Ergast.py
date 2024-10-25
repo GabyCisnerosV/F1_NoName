@@ -11,7 +11,7 @@ import requests
 import pandas as pd
 
 y_start,y_end=2024,2025 # range of years data is extracted
-r_start,r_end=15,20 #range races in the year (Sessions) extracted
+r_start,r_end=18,25 #range races in the year (Sessions) extracted
 
 ##############################################################################
 ### Race Results per race per driver

@@ -28,7 +28,7 @@ WeatherData = pd.read_csv(weather_file)
 LapsData = pd.read_csv(laps_file)
 
 initial_len_weather=len(WeatherData)
-initial_len_laps=len(LapsData)
+initial_len_laps=len(LapsData)``
 
 ##############################################################################
 ### Function to get data
