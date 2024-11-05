@@ -78,3 +78,36 @@ def classification_test_results(y_test,y_pred,figuresize=(8,8)):
     print(classification_report(y_test, y_pred))
 
     return
+
+##############################################################################
+# Classification MLP: Results after doing a prediction
+##############################################################################
+    # Creates accuracy and loss graphs
+def MLP_test_results(history_df,figuresize=(6,6)):
+    """
+    history_df: df with accuracy and loss features for test and training
+    figuresize: Size of feature importance figure (width,height)
+    """
+    # Plot training & validation accuracy values
+    fig, axs= plt.subplots(figsize=figuresize,ncols=2,nrows=1)
+
+    # Accuracy Plot
+    axs[0].plot(history_df['accuracy'], label='Train Accuracy')
+    axs[0].plot(history_df['val_accuracy'], label='Test Accuracy')
+    axs[0].set_title('Model Accuracy')
+    axs[0].set_ylabel('Accuracy')
+    axs[0].set_xlabel('Epoch')
+    axs[0].legend(loc='best')
+
+    # Loss Plot
+    axs[1].plot(history_df['loss'], label='Train Loss')
+    axs[1].plot(history_df['val_loss'], label='Test Loss')
+    axs[1].set_title('Model Loss')
+    axs[1].set_ylabel('Loss')
+    axs[1].set_xlabel('Epoch')
+    axs[1].legend(loc='best')
+
+    plt.tight_layout()
+    plt.show()
+
+    return
