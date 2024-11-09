@@ -98,6 +98,7 @@ def MLP_test_results(history_df,figuresize=(6,6)):
     axs[0].set_ylabel('Accuracy')
     axs[0].set_xlabel('Epoch')
     axs[0].legend(loc='best')
+    axs[0].set_ylim(0, 1)
 
     # Loss Plot
     axs[1].plot(history_df['loss'], label='Train Loss')
@@ -106,6 +107,7 @@ def MLP_test_results(history_df,figuresize=(6,6)):
     axs[1].set_ylabel('Loss')
     axs[1].set_xlabel('Epoch')
     axs[1].legend(loc='best')
+    axs[1].set_ylim(0, 1)
 
     plt.tight_layout()
     plt.show()
