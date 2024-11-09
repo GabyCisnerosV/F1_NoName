@@ -26,7 +26,7 @@ I know predicting a race outcome several laps before it ends (not even mention b
 
    The best results I got were a general test F1 score of 38% and a test accuracy of 59%. However, the models performed better depending on the number of pit stops, reaching a test F1 score of 68% when predicting 1 pit stop and 46% when predicting 2 pit stops. This suggests that while there is room for improvement predicting a higher number of pit stops, the models capture the most common pit stop behavior relatively good.
 
-### 3. **Predicting when a car will have a Pit Stops: Predicting the laps in which the drivers are going to stop for a pit stop**
+### 3. **Predicting when a car will go to Pit Stops: Predicting the laps in which the drivers are going to stop for a pit stop**
    
 If you have any suggestions or ideas, please feel free to let me know! 😊
 
