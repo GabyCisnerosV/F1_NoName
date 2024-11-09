@@ -354,3 +354,4 @@ def preprocess_FastF1_Laps(df: pd.DataFrame, OneHotEncoder=False) -> pd.DataFram
             df[name_encoded_feature]=encoder_values
 
     return df.drop_duplicates()
+
