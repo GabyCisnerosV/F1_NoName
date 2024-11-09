@@ -25,6 +25,8 @@ I know predicting a race outcome several laps before it ends (not even mention b
    One of the challenges I faced during this exercise was overfitting, particularly in models like the MLP. To address this, I used cross-validation, experimented with simpler structures (such as fewer layers and neurons), and included dropout layers to regularize the model. The second challenge I faced was the class imbalance in the target variable (ex: the average number of pit stops per driver in the 2024 season was 1.4). This imbalance led to the models being biased toward predicting less pit stops (1). For this reason, I evaluated the models not only with accuracy but also with the F1 score.
 
    The best results I got were a general test F1 score of 38% and a test accuracy of 59%. However, the models performed better depending on the number of pit stops, reaching a test F1 score of 68% when predicting 1 pit stop and 46% when predicting 2 pit stops. This suggests that while there is room for improvement predicting a higher number of pit stops, the models capture the most common pit stop behavior relatively good.
+
+### 3. **Predicting when a car will have a Pit Stops: Predicting the laps in which the drivers are going to stop for a pit stop**
    
 If you have any suggestions or ideas, please feel free to let me know! 😊
 
