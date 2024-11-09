@@ -6,7 +6,7 @@ I know predicting a race outcome several laps before it ends (not even mention b
 
 ## 🚀 What Has Been Done...
 
-### 1. **First Model: Predicting the final positions of a race before it starts**:
+### 1. **First Model: Predicting the final positions of a race before it starts**
    
    Initially, I tried predicting the final position of drivers in races using only the features available from the Ergast API before the race (like grid position, driver, circuit, etc.). Since there weren’t many of these features, I added data to each observation from past races for each driver to give futher information regarding the drivers performance (like their final position in the previous race, grid position in the previus race, % time difference from average race time (previous race), etc.).
    
@@ -16,7 +16,7 @@ I know predicting a race outcome several laps before it ends (not even mention b
 
    Final thoughts: Using just data like past final positions, final grid , driver, circuit, etc, is not enough to have accurate predictions on the final positions in a race. In the next attempt we try to add more features predicted and from other sources.
 
-### 2. **Predicting Pit Stops: Predicting the number of pit stops per driver per race**:
+### 2. **Predicting Pit Stops: Predicting the number of pit stops per driver per race**
 
    I decided it would be better to predict different factors of the race first before trying to predict the overall result. Therefore, I attempted to predict the number of pit stops during an F1 race for each driver (file: `3_Model_2_PredictingPitStops.ipynb`).
    
